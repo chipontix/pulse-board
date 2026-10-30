@@ -1,7 +1,8 @@
 // node bench/sse.ts [--url http://edge/api/stream] [--clients 100,500,...] [--events 20] [--every-ms 500]
 // For each client count: open N SSE streams, wait until all are connected, then
-// publish bench events straight to the Redis channel (stamped with this
-// process's clock) and record, per stream and event, receive time - send time.
+// publish bench events straight to the Redis channel, stamped with this
+// process's monotonic clock (performance.now(), immune to the VM's wall-clock
+// steps), and record, per stream and event, receive time - send time.
 // Same process sends and receives, so there is no clock skew in the numbers.
 import http from "node:http";
 import { writeFileSync } from "node:fs";
@@ -35,7 +36,7 @@ function connect(lat: number[], onReady: () => void, onFail: (e: Error) => void)
     let ready = false;
     res.setEncoding("utf8");
     res.on("data", (chunk: string) => {
-      const now = Date.now();
+      const now = performance.now();
       buf += chunk;
       let i;
       while ((i = buf.indexOf("\n\n")) >= 0) {
@@ -44,7 +45,7 @@ function connect(lat: number[], onReady: () => void, onFail: (e: Error) => void)
         if (!ready && frame.includes(": connected")) { ready = true; onReady(); }
         if (frame.startsWith("data: ")) {
           const e = JSON.parse(frame.slice(6));
-          if (e.type === "bench") { lat.push(now - e.sentAt); c.got++; }
+          if (e.type === "bench") { lat.push(Math.round(now - e.mono)); c.got++; }
         }
       }
     });
@@ -68,7 +69,7 @@ async function round(n: number) {
   if (failed === 0 && ready === n) {
     await sleep(1000);
     for (let seq = 0; seq < EVENTS; seq++) {
-      await publish(redis(), { type: "bench", seq });
+      await publish(redis(), { type: "bench", seq, mono: performance.now() });
       await sleep(Number(values["every-ms"]));
     }
     await sleep(3000); // grace for stragglers

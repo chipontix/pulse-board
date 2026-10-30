@@ -7,7 +7,7 @@ export const CHANNEL = "pb:events";
 export type PulseEvent =
   | { type: "service"; slug: string; status: ServiceStatus; sentAt: number }
   | { type: "incident"; incidentId: number; sentAt: number }
-  | { type: "bench"; seq: number; sentAt: number };
+  | { type: "bench"; seq: number; mono: number; sentAt: number };
 
 type Unsent<E> = E extends unknown ? Omit<E, "sentAt"> : never;
 
