@@ -61,10 +61,11 @@ p50 34.7–40.5 ms, p95 42.9–107.6 ms. Measured on commit `f4c6039`.
 - Without the cache every page view runs the snapshot queries (30 days of
   per-minute checks for 6 services, 259,200 seeded rows), 3 Postgres
   transactions per view (217–247 transactions/s at 69–80 views/s); with it
-  Postgres sees 5 transactions/s whatever the traffic,
-  mostly the worker's polling and one cache refresh per 5 s.
-- With the cache on, the Next.js render (one Node process) is the bottleneck,
-  not Redis.
+  Postgres sees 5 transactions/s at 347–468 views/s: the worker's polling and
+  one cache refresh per 5 s, not the page traffic.
+- With the cache on, Postgres is out of the request path; what remains is the
+  Next.js render in one Node process, sharing the VM with the load generator.
+  Not profiled further.
 - `cache-invalidate-1s` invalidates the snapshot every second during the run,
   far more often than real incidents and status changes do; the hit rate drops
   to 86.73–89.91% and Postgres load stays at 8 transactions/s. Its latency is
@@ -75,8 +76,8 @@ p50 34.7–40.5 ms, p95 42.9–107.6 ms. Measured on commit `f4c6039`.
 client with **p95 < 500 ms**, and every client must get every event. Method
 ([`bench/sse.ts`](bench/sse.ts)): open N streams through nginx, wait until all
 are connected, publish 20 events 500 ms apart straight to the Redis channel,
-stamped with the sender's clock; the same process receives them, so
-receive − send has no clock skew. The ladder goes up until the first client
+stamped with `performance.now()` (monotonic); the same process receives them,
+so receive − send has neither clock skew nor wall-clock steps. The ladder goes up until the first client
 count that misses the budget. Repeated 3 times.
 
 | run | largest client count within budget | first count over budget: p95 |
@@ -94,14 +95,13 @@ the latency budget. Full per-round table (p50/p95/p99/max):
 
 Where the limit is, is not settled. `docker stats` sampled every ~3 s
 (`results/sse-r*-docker-stats.txt`) shows the app's peak at 97.67% of one
-core in r1 but under 10% in r2 and r3, so the misses in r2/r3 are not
-explained by the app's event loop alone; CPU contention in the shared VM (the
-load generator runs in it too) is the likely remainder. An earlier series
-with the same ladder on a quieter VM went further, but its delivery times were
-taken from the wall clock, which lima steps during time sync, so it was
-discarded and re-run with `performance.now()`; it is not reported here.
+core in r1 but under 10% in r2 and r3. 3 s samples can miss short bursts, so
+this doesn't rule the app out, but it points at CPU contention in the shared VM
+(the load generator runs in it too) as part of the cause. An earlier series
+took delivery times from the wall clock, which lima steps during time sync; it
+was discarded and is not reported.
 
-**Hardware.** MacBook Pro, Apple M4 Max (16 cores, 48 GiB). Everything,
+**Hardware.** Apple M4 Max (16 cores, 48 GiB). Everything,
 including the load generators, runs in one colima VM with 4 vCPU and 5.77 GiB
 (6197440512 bytes), Docker 29.5.2. The VM and the laptop were shared with
 other projects' workloads during the session; at the moment of each recorded
@@ -318,9 +318,9 @@ container on the compose network, so the load generator shares the VM's
   `DELETE` endpoint) but nothing sends notifications or confirmation mails; the
   API answers the same for new and existing addresses so it can't be used to
   enumerate subscribers.
-- **One app process in the measurements.** SSE fan-out and page rendering are
-  bounded by one Node event loop; more app replicas behind nginx is the next
-  step and needs no code change (each has its own subscriber).
+- **One app process in the measurements.** SSE fan-out and page rendering run
+  in one Node event loop; more app replicas behind nginx is the next step and
+  needs no code change (each has its own subscriber). Not measured.
 - **Events are fire-and-forget.** Redis pub/sub does not store messages; a
   browser that is disconnected misses them and resyncs by re-rendering on
   reconnect. A gap between the first render and the first SSE connection is
