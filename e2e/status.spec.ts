@@ -81,9 +81,13 @@ test("the admin panel needs a session and refuses a wrong password", async ({ pa
   await expect(page).toHaveURL(/\/admin\/login$/);
 });
 
-test("the public API reports its rate limit", async ({ request }) => {
-  const res = await request.get("/api/v1/status");
-  expect(res.status()).toBe(200);
-  expect(res.headers()["x-ratelimit-limit"]).toBe("60");
-  expect((await res.json()).services.map((s: { slug: string }) => s.slug)).toContain("search");
+test("the public API reports its rate limit, and a spoofed X-Forwarded-For doesn't buy a new bucket", async ({ request }) => {
+  const get = (ip: string) => request.get("/api/v1/status", { headers: { "x-forwarded-for": ip } });
+  const a = await get("203.0.113.1");
+  const b = await get("203.0.113.2");
+  expect(a.status()).toBe(200);
+  expect(a.headers()["x-ratelimit-limit"]).toBe("60");
+  // nginx replaced both headers with the real address: one bucket, two requests
+  expect(Number(b.headers()["x-ratelimit-remaining"])).toBe(Number(a.headers()["x-ratelimit-remaining"]) - 1);
+  expect((await a.json()).services.map((s: { slug: string }) => s.slug)).toContain("search");
 });

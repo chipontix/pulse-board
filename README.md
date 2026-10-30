@@ -24,14 +24,17 @@ make e2e     # Playwright against the running stack
 | The cache never serves a snapshot older than the last event | integration: a load that read Postgres before an invalidation is not stored and is retried, so even callers already waiting on it get the new value (`tests/integration/cache.test.ts`) |
 | Stale-while-revalidate refreshes once, not once per request | integration: 5 concurrent stale reads, 1 background load (Redis `SET NX` lock); 10 concurrent misses, 1 load (in-process single flight) |
 | The rate limiter admits exactly the limit under concurrency | integration: 50 concurrent requests against a limit of 10 → exactly 10 admitted; refused requests are not counted; the window slides |
-| The limit can't be dodged by sending `X-Forwarded-For` | nginx overwrites the header with the socket address; checked by hand (two spoofed requests share one bucket), see [Design decisions](#design-decisions) |
+| The limit can't be dodged by sending `X-Forwarded-For` | e2e: two requests with different spoofed `X-Forwarded-For` through nginx land in one bucket (nginx overwrites the header with the socket address), see [Design decisions](#design-decisions) |
 | Two workers never probe the same service at once | integration: 3 concurrent `claimDue` calls over 40 due services return 40 distinct ids (`FOR UPDATE SKIP LOCKED`) |
 | Migrations go down and up cleanly | integration: down to an empty schema (no tables, no enum types), up, idempotent second up, one step down and up again; two concurrent migrators serialise on an advisory lock |
 | The main queries use the indexes below | integration: `EXPLAIN` of the page, open-incident and due-service queries names the intended index |
 | Status rules | unit: 30 tests over `deriveStatus`, `overallStatus`, incident transitions, uptime rounding, password hashing, rate-limit headers |
 
 Test counts are from `make test` and `make e2e` on the commit in this repo:
-NUMBERS_TESTS
+**55 unit + integration tests** (`make test`, 7 files: 30 unit, 25 integration)
+and **4 Playwright tests** (`make e2e`), all passing on commit `2994dc3`;
+output in [`results/make-test.txt`](results/make-test.txt) and
+[`results/make-e2e.txt`](results/make-e2e.txt).
 
 ## Numbers
 
@@ -45,17 +48,26 @@ of each mode. p50/p95/p99 are computed from every response time (autocannon's
 own table has no p95). Hit rate = Redis lookups served from Redis (fresh or
 stale) / all lookups during the measured 30 s.
 
-NUMBERS_PAGE
+| mode | runs | req/s | p50 ms | p95 ms | p99 ms | cache hit rate | Postgres tx/s | non-2xx |
+|---|---|---|---|---|---|---|---|---|
+| nocache | 3 | 69–80 | 574.3–671.8 | 974.7–1110.8 | 1261.1–1332.0 | n/a (cache off) | 217–247 | 0 |
+| cache | 3 | 347–468 | 101.5–126.9 | 143.9–262.4 | 261.8–487.3 | 100.00% | 5 | 0 |
+| cache-invalidate-1s | 3 | 360–457 | 98.2–108.7 | 157.5–320.0 | 204.6–692.4 | 86.73%–89.91% | 8 | 0 |
+
+Same repetition, cache on vs off: throughput ×5.0–5.8, p95 ÷3.8–6.8. The
+snapshot queries alone, 30 sequential loads with no other load from the bench:
+p50 34.7–40.5 ms, p95 42.9–107.6 ms. Measured on commit `f4c6039`.
 
 - Without the cache every page view runs the snapshot queries (30 days of
-  per-minute checks for 6 services, ~260k rows), 3 Postgres transactions per
-  view; with it Postgres sees about 5 transactions/s whatever the traffic,
+  per-minute checks for 6 services, 259,200 seeded rows), 3 Postgres
+  transactions per view (217–247 transactions/s at 69–80 views/s); with it
+  Postgres sees 5 transactions/s whatever the traffic,
   mostly the worker's polling and one cache refresh per 5 s.
 - With the cache on, the Next.js render (one Node process) is the bottleneck,
   not Redis.
 - `cache-invalidate-1s` invalidates the snapshot every second during the run,
   far more often than real incidents and status changes do; the hit rate drops
-  to 88.74–90.66% and Postgres load stays under 10 transactions/s. Its latency is
+  to 86.73–89.91% and Postgres load stays at 8 transactions/s. Its latency is
   not worse than the plain cached runs: the difference between the two cached
   modes is inside the run-to-run noise of the shared VM.
 
@@ -67,9 +79,36 @@ stamped with the sender's clock; the same process receives them, so
 receive − send has no clock skew. The ladder goes up until the first client
 count that misses the budget. Repeated 3 times.
 
-NUMBERS_SSE
+| run | largest client count within budget | first count over budget: p95 |
+|---|---|---|
+| r1 | 1000 (p95 233 ms) | 1500: 599 ms |
+| r2 | 1000 (p95 192 ms) | 1500: 677 ms |
+| r3 | 500 (p95 189 ms) | 1000: 503 ms |
 
-**Hardware.** NUMBERS_HW
+So on this machine one app process keeps **500–1000 concurrent SSE clients**
+within p95 < 500 ms with every event delivered; at 1500 clients p95 was
+599–677 ms. Delivery stayed at 100% in every round, including the ones over
+the latency budget. Full per-round table (p50/p95/p99/max):
+[`results/SUMMARY.md`](results/SUMMARY.md); raw: `results/sse-r*.txt`,
+`results/sse-r*.json`. Measured on commit `52345a1`.
+
+Where the limit is, is not settled. `docker stats` sampled every ~3 s
+(`results/sse-r*-docker-stats.txt`) shows the app's peak at 97.67% of one
+core in r1 but under 10% in r2 and r3, so the misses in r2/r3 are not
+explained by the app's event loop alone; CPU contention in the shared VM (the
+load generator runs in it too) is the likely remainder. An earlier series
+with the same ladder on a quieter VM went further, but its delivery times were
+taken from the wall clock, which lima steps during time sync, so it was
+discarded and re-run with `performance.now()`; it is not reported here.
+
+**Hardware.** MacBook Pro, Apple M4 Max (16 cores, 48 GiB). Everything,
+including the load generators, runs in one colima VM with 4 vCPU and 5.77 GiB
+(6197440512 bytes), Docker 29.5.2. The VM and the laptop were shared with
+other projects' workloads during the session; at the moment of each recorded
+run `docker ps` counted 8 running containers, all of them this project's
+(the count is at the top of every `results/*.txt`). Limits: app 1 GiB (one
+Node.js process), Postgres and Redis unlimited with default settings, nginx one
+worker. Expect higher and tighter numbers on dedicated hardware.
 
 ## Architecture
 
