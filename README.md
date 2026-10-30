@@ -32,7 +32,7 @@ make e2e     # Playwright against the running stack
 
 Test counts are from `make test` and `make e2e` on the commit in this repo:
 **55 unit + integration tests** (`make test`, 7 files: 30 unit, 25 integration)
-and **4 Playwright tests** (`make e2e`), all passing on commit `2994dc3`;
+and **4 Playwright tests** (`make e2e`), all passing on commit `d962185`;
 output in [`results/make-test.txt`](results/make-test.txt) and
 [`results/make-e2e.txt`](results/make-e2e.txt).
 

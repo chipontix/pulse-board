@@ -1,0 +1,64 @@
+22:54:10
+pulseboard-app-1 8.95% 95.03MiB / 1GiB
+pulseboard-edge-1 0.00% 14.86MiB / 5.772GiB
+pulseboard-redis-1 0.20% 14.04MiB / 5.772GiB
+pulseboard-tools-run-734aee6e874a 79.88% 51.97MiB / 1GiB
+22:54:16
+pulseboard-tools-run-734aee6e874a 3.27% 53.1MiB / 1GiB
+pulseboard-app-1 8.24% 137MiB / 1GiB
+pulseboard-edge-1 1.91% 27.44MiB / 5.772GiB
+pulseboard-redis-1 1.55% 14.04MiB / 5.772GiB
+22:54:21
+pulseboard-tools-run-734aee6e874a 5.09% 54.62MiB / 1GiB
+pulseboard-app-1 14.97% 139.7MiB / 1GiB
+pulseboard-edge-1 4.36% 27.44MiB / 5.772GiB
+pulseboard-redis-1 0.22% 14.04MiB / 5.772GiB
+22:54:27
+pulseboard-tools-run-734aee6e874a 15.04% 51.81MiB / 1GiB
+pulseboard-app-1 41.62% 143.5MiB / 1GiB
+pulseboard-edge-1 11.09% 14.98MiB / 5.772GiB
+pulseboard-redis-1 1.51% 14.04MiB / 5.772GiB
+22:54:32
+pulseboard-tools-run-734aee6e874a 41.23% 61.54MiB / 1GiB
+pulseboard-app-1 30.98% 104.1MiB / 1GiB
+pulseboard-edge-1 5.80% 26.38MiB / 5.772GiB
+pulseboard-redis-1 1.62% 14.04MiB / 5.772GiB
+22:54:37
+pulseboard-tools-run-734aee6e874a 11.42% 71.35MiB / 1GiB
+pulseboard-app-1 19.77% 171.5MiB / 1GiB
+pulseboard-edge-1 8.98% 40.14MiB / 5.772GiB
+pulseboard-redis-1 2.85% 14.04MiB / 5.772GiB
+22:54:42
+pulseboard-tools-run-734aee6e874a 3.60% 80.08MiB / 1GiB
+pulseboard-app-1 8.25% 172.8MiB / 1GiB
+pulseboard-edge-1 3.99% 40.14MiB / 5.772GiB
+pulseboard-redis-1 2.26% 14.04MiB / 5.772GiB
+22:54:48
+pulseboard-tools-run-734aee6e874a 20.67% 76.03MiB / 1GiB
+pulseboard-app-1 58.26% 172.9MiB / 1GiB
+pulseboard-edge-1 19.94% 15.23MiB / 5.772GiB
+pulseboard-redis-1 0.21% 14.04MiB / 5.772GiB
+22:54:53
+pulseboard-tools-run-734aee6e874a 87.17% 88.53MiB / 1GiB
+pulseboard-app-1 66.11% 182.3MiB / 1GiB
+pulseboard-edge-1 19.85% 44.98MiB / 5.772GiB
+pulseboard-redis-1 6.23% 14.04MiB / 5.772GiB
+22:54:58
+pulseboard-tools-run-734aee6e874a 9.29% 94.09MiB / 1GiB
+pulseboard-app-1 37.51% 205.6MiB / 1GiB
+pulseboard-edge-1 9.89% 52.99MiB / 5.772GiB
+pulseboard-redis-1 0.27% 14.04MiB / 5.772GiB
+22:55:04
+pulseboard-tools-run-734aee6e874a 23.07% 92.61MiB / 1GiB
+pulseboard-app-1 38.19% 205.7MiB / 1GiB
+pulseboard-edge-1 12.56% 52.99MiB / 5.772GiB
+pulseboard-redis-1 0.78% 14.04MiB / 5.772GiB
+22:55:10
+pulseboard-tools-run-734aee6e874a 0.00% 85.5MiB / 1GiB
+pulseboard-app-1 23.35% 202MiB / 1GiB
+pulseboard-edge-1 0.00% 15.62MiB / 5.772GiB
+pulseboard-redis-1 2.03% 14.04MiB / 5.772GiB
+22:55:15
+pulseboard-edge-1 0.00% 15.62MiB / 5.772GiB
+pulseboard-redis-1 2.35% 14.04MiB / 5.772GiB
+pulseboard-app-1 97.67% 80.62MiB / 1GiB

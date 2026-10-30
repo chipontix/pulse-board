@@ -1,0 +1,64 @@
+date: 2026-10-30T22:44:44Z
+commit: f4c6039
+host: Apple M4 Max, 16 cores, 48 GiB
+docker VM: 4 vCPU, 6197440512 bytes, server 29.5.2
+containers running (all projects on this docker host): 8
+containers of this project: 8
+app CACHE_DISABLED=0
+
+ Container pulseboard-tools-run-848caad9c3b7 Creating 
+ Container pulseboard-tools-run-848caad9c3b7 Created 
+
+┌─────────┬───────┬───────┬────────┬────────┬───────────┬──────────┬─────────┐
+│ Stat    │ 2.5%  │ 50%   │ 97.5%  │ 99%    │ Avg       │ Stdev    │ Max     │
+├─────────┼───────┼───────┼────────┼────────┼───────────┼──────────┼─────────┤
+│ Latency │ 69 ms │ 98 ms │ 261 ms │ 337 ms │ 108.77 ms │ 58.09 ms │ 1139 ms │
+└─────────┴───────┴───────┴────────┴────────┴───────────┴──────────┴─────────┘
+┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev   │ Min     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Req/Sec   │ 146     │ 146     │ 473     │ 622     │ 457     │ 115.39  │ 146     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Bytes/Sec │ 4.29 MB │ 4.29 MB │ 13.9 MB │ 18.3 MB │ 13.4 MB │ 3.39 MB │ 4.29 MB │
+└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+
+Req/Bytes counts sampled once per second.
+# of samples: 30
+
+14k requests in 29.66s, 403 MB read
+
+{
+  "label": "cache-invalidate-1s-r3",
+  "url": "http://edge/",
+  "connections": 50,
+  "durationS": 30,
+  "requests": 13710,
+  "non2xx": 0,
+  "errors": 0,
+  "timeouts": 0,
+  "reqPerSec": 457,
+  "latencyMs": {
+    "p50": 98.155455,
+    "p95": 168.078159,
+    "p99": 337.094718,
+    "max": 1139.068935,
+    "samples": 13710
+  },
+  "cache": {
+    "fresh": 12292,
+    "stale": 53,
+    "miss": 1415,
+    "lookups": 13760,
+    "hitRate": 0.8971656976744186,
+    "invalidations": 30
+  },
+  "postgres": {
+    "transactions": 238,
+    "perSecond": 8
+  },
+  "snapshotQueryAloneMs": {
+    "p50": 40.54551700000002,
+    "p95": 107.5571910000001,
+    "samples": 30
+  }
+}

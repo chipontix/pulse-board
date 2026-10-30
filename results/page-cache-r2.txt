@@ -1,0 +1,64 @@
+date: 2026-10-30T22:41:52Z
+commit: f4c6039
+host: Apple M4 Max, 16 cores, 48 GiB
+docker VM: 4 vCPU, 6197440512 bytes, server 29.5.2
+containers running (all projects on this docker host): 8
+containers of this project: 8
+app CACHE_DISABLED=0
+
+ Container pulseboard-tools-run-d91941cc8a49 Creating 
+ Container pulseboard-tools-run-d91941cc8a49 Created 
+
+┌─────────┬───────┬────────┬────────┬────────┬──────────┬──────────┬────────┐
+│ Stat    │ 2.5%  │ 50%    │ 97.5%  │ 99%    │ Avg      │ Stdev    │ Max    │
+├─────────┼───────┼────────┼────────┼────────┼──────────┼──────────┼────────┤
+│ Latency │ 81 ms │ 126 ms │ 328 ms │ 383 ms │ 143.8 ms │ 63.08 ms │ 676 ms │
+└─────────┴───────┴────────┴────────┴────────┴──────────┴──────────┴────────┘
+┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev   │ Min     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Req/Sec   │ 222     │ 222     │ 315     │ 507     │ 346.7   │ 78.5    │ 222     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Bytes/Sec │ 6.52 MB │ 6.52 MB │ 9.26 MB │ 14.9 MB │ 10.2 MB │ 2.31 MB │ 6.52 MB │
+└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+
+Req/Bytes counts sampled once per second.
+# of samples: 30
+
+10k requests in 29.83s, 306 MB read
+
+{
+  "label": "cache-r2",
+  "url": "http://edge/",
+  "connections": 50,
+  "durationS": 30,
+  "requests": 10401,
+  "non2xx": 0,
+  "errors": 0,
+  "timeouts": 0,
+  "reqPerSec": 347,
+  "latencyMs": {
+    "p50": 126.887327,
+    "p95": 262.37495,
+    "p99": 383.965665,
+    "max": 676.909463,
+    "samples": 10401
+  },
+  "cache": {
+    "fresh": 10047,
+    "stale": 415,
+    "miss": 0,
+    "lookups": 10462,
+    "hitRate": 1,
+    "invalidations": 0
+  },
+  "postgres": {
+    "transactions": 148,
+    "perSecond": 5
+  },
+  "snapshotQueryAloneMs": {
+    "p50": 35.71635900000001,
+    "p95": 47.63931000000002,
+    "samples": 30
+  }
+}

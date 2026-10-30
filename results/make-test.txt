@@ -1,0 +1,102 @@
+commit: d962185
+docker compose --profile test build test
+ Image pulseboard-tools:local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 582B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.05kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-alpine
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 108B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 380.44kB 0.1s done
+#5 DONE 0.1s
+
+#6 [deps 1/4] FROM docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#6 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 0.0s done
+#6 DONE 0.0s
+
+#7 [deps 3/4] COPY package.json package-lock.json ./
+#7 CACHED
+
+#8 [deps 2/4] WORKDIR /app
+#8 CACHED
+
+#9 [deps 4/4] RUN npm ci --ignore-scripts
+#9 CACHED
+
+#10 [tools 1/1] COPY . .
+#10 DONE 0.1s
+
+#11 exporting to image
+#11 exporting layers 0.1s done
+#11 exporting manifest sha256:05959ee53efc74b95a7ee5fc10614ebd55792754ff7996ccd17a31485d2145f3 0.0s done
+#11 exporting config sha256:d6ece8dfc6d454c1252da1a4161ab1436808ac7f63127e5f59e4ab76a2f288f0
+#11 exporting config sha256:d6ece8dfc6d454c1252da1a4161ab1436808ac7f63127e5f59e4ab76a2f288f0 0.0s done
+#11 exporting attestation manifest sha256:54ecd0d889f283d0bd3ed9a9fbac84fd3871b3e117e963fb38c0c4038fdb2bc5 0.0s done
+#11 exporting manifest list sha256:63213ee2dd32d52d4e51307e9aaf2a64a43ab963c44c07087d64ad817ef858c6 0.0s done
+#11 naming to docker.io/library/pulseboard-tools:local done
+#11 unpacking to docker.io/library/pulseboard-tools:local 0.0s done
+#11 DONE 0.3s
+
+#12 resolving provenance for metadata file
+#12 DONE 0.0s
+ Image pulseboard-tools:local Built 
+docker compose --profile test run --rm test npx vitest run
+ Container pulseboard-redis-test-1 Creating 
+ Container pulseboard-postgres-test-1 Creating 
+ Container pulseboard-redis-test-1 Created 
+ Container pulseboard-postgres-test-1 Created 
+ Container pulseboard-redis-test-1 Starting 
+ Container pulseboard-postgres-test-1 Starting 
+ Container pulseboard-redis-test-1 Started 
+ Container pulseboard-postgres-test-1 Started 
+ Container pulseboard-postgres-test-1 Waiting 
+ Container pulseboard-redis-test-1 Waiting 
+ Container pulseboard-postgres-test-1 Healthy 
+ Container pulseboard-redis-test-1 Healthy 
+ Container pulseboard-test-run-2da57ff2935a Creating 
+ Container pulseboard-test-run-2da57ff2935a Created 
+
+ RUN  v5.0.5 /app
+
+ ✓ tests/integration/incidents-api.test.ts (7 tests) 781ms
+ ✓ tests/integration/worker.test.ts (5 tests) 4318ms
+   ✓ worker (5)
+     ✓ marks slow answers degraded and timeouts as failures 354ms
+ ✓ tests/unit/status.test.ts (22 tests) 6ms
+ ✓ tests/integration/cache.test.ts (4 tests) 650ms
+   ✓ SwrCache (4)
+     ✓ serves stale while one background refresh runs 328ms
+ ✓ tests/integration/ratelimit-session.test.ts (6 tests) 1102ms
+   ✓ sliding-window rate limit (4)
+     ✓ slides: capacity comes back as old requests leave the window 851ms
+ ✓ tests/integration/migrations.test.ts (3 tests) 137ms
+ ✓ tests/unit/misc.test.ts (8 tests) 154ms
+
+ Test Files  7 passed (7)
+      Tests  55 passed (55)
+   Start at  23:04:01
+   Duration  9.07s (tests 85%, import 10%, transform 5%)
+
+    Isolate  7 workers spawned · ~90ms startup each (spawn + environment, per file)
+             at least ~542ms faster with isolate: false — reuses workers across files instead of one per file
+
+docker compose --profile test rm -sfv postgres-test redis-test
+ Container pulseboard-redis-test-1 Stopping 
+ Container pulseboard-postgres-test-1 Stopping 
+ Container pulseboard-postgres-test-1 Stopped 
+ Container pulseboard-redis-test-1 Stopped 
+Going to remove pulseboard-postgres-test-1, pulseboard-redis-test-1
+ Container pulseboard-redis-test-1 Removing 
+ Container pulseboard-postgres-test-1 Removing 
+ Container pulseboard-redis-test-1 Removed 
+ Container pulseboard-postgres-test-1 Removed 

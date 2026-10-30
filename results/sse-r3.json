@@ -1,0 +1,36 @@
+{
+  "budgetMs": 500,
+  "events": 20,
+  "everyMs": 500,
+  "rows": [
+    {
+      "clients": 500,
+      "connected": 500,
+      "failed": 0,
+      "connectS": 1.439,
+      "expected": 10000,
+      "delivered": 10000,
+      "deliveredPct": 100,
+      "p50": 31,
+      "p95": 189,
+      "p99": 476,
+      "max": 480,
+      "withinBudget": true
+    },
+    {
+      "clients": 1000,
+      "connected": 1000,
+      "failed": 0,
+      "connectS": 1.717,
+      "expected": 20000,
+      "delivered": 20000,
+      "deliveredPct": 100,
+      "p50": 50,
+      "p95": 503,
+      "p99": 959,
+      "max": 1026,
+      "withinBudget": false
+    }
+  ],
+  "largestWithinBudget": 500
+}

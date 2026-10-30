@@ -1,0 +1,20 @@
+date: 2026-10-30T22:54:10Z
+commit: 52345a1
+host: Apple M4 Max, 16 cores, 48 GiB
+docker VM: 4 vCPU, 6197440512 bytes, server 29.5.2
+containers running (all projects on this docker host): 8
+containers of this project: 8
+
+ Container pulseboard-tools-run-734aee6e874a Creating 
+ Container pulseboard-tools-run-734aee6e874a Created 
+{"clients":500,"connected":500,"failed":0,"connectS":2.066,"expected":10000,"delivered":10000,"deliveredPct":100,"p50":27,"p95":94,"p99":263,"max":282,"withinBudget":true}
+{"clients":1000,"connected":1000,"failed":0,"connectS":1.783,"expected":20000,"delivered":20000,"deliveredPct":100,"p50":42,"p95":233,"p99":307,"max":320,"withinBudget":true}
+{"clients":1500,"connected":1500,"failed":0,"connectS":2.281,"expected":30000,"delivered":30000,"deliveredPct":100,"p50":81,"p95":599,"p99":788,"max":813,"withinBudget":false}
+
+budget: p95 < 500 ms and 100% delivered; 20 events, one per 500 ms
+clients  connected  delivered%   p50   p95   p99    max (ms)  within budget
+    500        500         100     27    94   263   282       yes
+   1000       1000         100     42   233   307   320       yes
+   1500       1500         100     81   599   788   813       NO
+
+largest client count within budget: 1000

@@ -1,0 +1,50 @@
+{
+  "budgetMs": 500,
+  "events": 20,
+  "everyMs": 500,
+  "rows": [
+    {
+      "clients": 500,
+      "connected": 500,
+      "failed": 0,
+      "connectS": 2.066,
+      "expected": 10000,
+      "delivered": 10000,
+      "deliveredPct": 100,
+      "p50": 27,
+      "p95": 94,
+      "p99": 263,
+      "max": 282,
+      "withinBudget": true
+    },
+    {
+      "clients": 1000,
+      "connected": 1000,
+      "failed": 0,
+      "connectS": 1.783,
+      "expected": 20000,
+      "delivered": 20000,
+      "deliveredPct": 100,
+      "p50": 42,
+      "p95": 233,
+      "p99": 307,
+      "max": 320,
+      "withinBudget": true
+    },
+    {
+      "clients": 1500,
+      "connected": 1500,
+      "failed": 0,
+      "connectS": 2.281,
+      "expected": 30000,
+      "delivered": 30000,
+      "deliveredPct": 100,
+      "p50": 81,
+      "p95": 599,
+      "p99": 788,
+      "max": 813,
+      "withinBudget": false
+    }
+  ],
+  "largestWithinBudget": 1000
+}
