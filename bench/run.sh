@@ -28,7 +28,6 @@ case "$what" in
         off=$([ "$mode" = nocache ] && echo 1 || echo 0)
         extra=$([ "$mode" = cache-invalidate-1s ] && echo "--invalidate-ms 1000" || true)
         CACHE_DISABLED=$off $C up -d --wait app edge >/dev/null 2>&1
-        $C restart edge >/dev/null 2>&1
         { env_report; echo "app CACHE_DISABLED=$($C exec -T app printenv CACHE_DISABLED)"; echo; \
           $C run --rm --no-deps tools node bench/page.ts "$mode-r$rep" $extra; } 2>&1 | tee "results/page-$mode-r$rep.txt"
       done
