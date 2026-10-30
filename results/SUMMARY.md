@@ -2,11 +2,11 @@
 
 | mode | runs | req/s | p50 ms | p95 ms | p99 ms | cache hit rate | Postgres tx/s | non-2xx |
 |---|---|---|---|---|---|---|---|---|
-| nocache | 3 | 69–80 | 574.3–671.8 | 974.7–1110.8 | 1261.1–1332.0 | n/a (cache off) | 217–247 | 0 |
-| cache | 3 | 347–468 | 101.5–126.9 | 143.9–262.4 | 261.8–487.3 | 100.00% | 5 | 0 |
-| cache-invalidate-1s | 3 | 360–457 | 98.2–108.7 | 157.5–320.0 | 204.6–692.4 | 86.73%–89.91% | 8 | 0 |
+| nocache | 3 | 69.1–80.0 | 574.3–671.8 | 974.7–1110.8 | 1261.1–1332.0 | n/a (cache off) | 217.2–247.1 | 0 |
+| cache | 3 | 346.7–468.1 | 101.5–126.9 | 143.9–262.4 | 261.8–487.3 | 100.00% | 4.7–5.0 | 0 |
+| cache-invalidate-1s | 3 | 359.6–457.0 | 98.2–108.7 | 157.5–320.0 | 204.6–692.4 | 86.73%–89.91% | 7.6–7.9 | 0 |
 
-Cache on vs off, same repetition: throughput ×5.0–5.8, p95 ÷3.8–6.8.
+Cache on vs off, same repetition (raw request counts and p95): throughput ×4.9–5.8, p95 ÷3.7–6.7.
 
 Snapshot queries alone (30 sequential loads before each run): p50 34.7–40.5 ms, p95 42.9–107.6 ms.
 

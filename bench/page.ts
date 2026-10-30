@@ -21,6 +21,8 @@ const { values, positionals } = parseArgs({
   },
 });
 const label = positionals[0] ?? "run";
+// one decimal, never rounded up
+const floor1 = (x: number) => Math.floor(x * 10) / 10;
 const cache = snapshotCache();
 
 const run = (duration: number, onResponse?: (ms: number) => void) => new Promise<autocannon.Result>((ok, fail) => {
@@ -55,11 +57,11 @@ const lookups = s.fresh + s.stale + s.miss;
 const out = {
   label, url: values.url, connections: Number(values.connections), durationS: Number(values.duration),
   requests: r.requests.total, non2xx: r.non2xx, errors: r.errors, timeouts: r.timeouts,
-  reqPerSec: Math.round(r.requests.average),
+  reqPerSec: floor1(r.requests.total / Number(values.duration)),
   latencyMs: { p50: pct(lat, 50), p95: pct(lat, 95), p99: pct(lat, 99), max: Math.max(...lat), samples: lat.length },
   cache: { ...s, lookups, hitRate: lookups ? (s.fresh + s.stale) / lookups : null, invalidations },
   // includes the worker's few transactions per second and this script's two reads
-  postgres: { transactions: pgXacts, perSecond: Math.round(pgXacts / Number(values.duration)) },
+  postgres: { transactions: pgXacts, perSecond: floor1(pgXacts / Number(values.duration)) },
   snapshotQueryAloneMs: { p50: pct(direct, 50), p95: pct(direct, 95), samples: direct.length },
 };
 const text = autocannon.printResult(r) + "\n" + JSON.stringify(out, null, 2) + "\n";

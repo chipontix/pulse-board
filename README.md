@@ -50,25 +50,28 @@ stale) / all lookups during the measured 30 s.
 
 | mode | runs | req/s | p50 ms | p95 ms | p99 ms | cache hit rate | Postgres tx/s | non-2xx |
 |---|---|---|---|---|---|---|---|---|
-| nocache | 3 | 69–80 | 574.3–671.8 | 974.7–1110.8 | 1261.1–1332.0 | n/a (cache off) | 217–247 | 0 |
-| cache | 3 | 347–468 | 101.5–126.9 | 143.9–262.4 | 261.8–487.3 | 100.00% | 5 | 0 |
-| cache-invalidate-1s | 3 | 360–457 | 98.2–108.7 | 157.5–320.0 | 204.6–692.4 | 86.73%–89.91% | 8 | 0 |
+| nocache | 3 | 69.1–80.0 | 574.3–671.8 | 974.7–1110.8 | 1261.1–1332.0 | n/a (cache off) | 217.2–247.1 | 0 |
+| cache | 3 | 346.7–468.1 | 101.5–126.9 | 143.9–262.4 | 261.8–487.3 | 100.00% | 4.7–5.0 | 0 |
+| cache-invalidate-1s | 3 | 359.6–457.0 | 98.2–108.7 | 157.5–320.0 | 204.6–692.4 | 86.73%–89.91% | 7.6–7.9 | 0 |
 
-Same repetition, cache on vs off: throughput ×5.0–5.8, p95 ÷3.8–6.8. The
+Same repetition, cache on vs off, from raw request counts and p95:
+throughput ×4.9–5.8, p95 ÷3.7–6.7 (rates and ratios are truncated to one
+decimal, never rounded up). The
 snapshot queries alone, 30 sequential loads with no other load from the bench:
 p50 34.7–40.5 ms, p95 42.9–107.6 ms. Measured on commit `f4c6039`.
 
 - Without the cache every page view runs the snapshot queries (30 days of
   per-minute checks for 6 services, 259,200 seeded rows), 3 Postgres
-  transactions per view (217–247 transactions/s at 69–80 views/s); with it
-  Postgres sees 5 transactions/s at 347–468 views/s: the worker's polling and
+  transactions per view (217.2–247.1 transactions/s at 69.1–80.0 views/s);
+  with it Postgres sees 4.7–5.0 transactions/s at 346.7–468.1 views/s: the
+  worker's polling and
   one cache refresh per 5 s, not the page traffic.
 - With the cache on, Postgres is out of the request path; what remains is the
   Next.js render in one Node process, sharing the VM with the load generator.
   Not profiled further.
 - `cache-invalidate-1s` invalidates the snapshot every second during the run,
   far more often than real incidents and status changes do; the hit rate drops
-  to 86.73–89.91% and Postgres load stays at 8 transactions/s. Its latency is
+  to 86.73–89.91% and Postgres load is 7.6–7.9 transactions/s. Its latency is
   not worse than the plain cached runs: the difference between the two cached
   modes is inside the run-to-run noise of the shared VM.
 
@@ -94,10 +97,12 @@ the latency budget. Full per-round table (p50/p95/p99/max):
 `results/sse-r*.json`. Measured on commit `52345a1`.
 
 Where the limit is, is not settled. `docker stats` sampled every ~3 s
-(`results/sse-r*-docker-stats.txt`) shows the app's peak at 97.67% of one
-core in r1 but under 10% in r2 and r3. 3 s samples can miss short bursts, so
-this doesn't rule the app out, but it points at CPU contention in the shared VM
-(the load generator runs in it too) as part of the cause. An earlier series
+(`results/sse-r*-docker-stats.txt`) shows the app's peak at 97.67%, 70.24% and 58.44% of one
+core in r1, r2 and r3. The app's single event loop was busy in every run, but
+by these samples (which can miss short bursts) it was saturated only in r1,
+while r2 and r3 missed the budget at lower client counts. So the bottleneck is
+not established: the candidates are the app's event loop and CPU shared with
+the load generator, which runs in the same 4-vCPU VM. An earlier series
 took delivery times from the wall clock, which lima steps during time sync; it
 was discarded and is not reported.
 
