@@ -1,0 +1,10 @@
+DROP TABLE admins;
+DROP TABLE subscriptions;
+DROP TABLE incident_updates;
+DROP TABLE incident_services;
+DROP TABLE incidents;
+DROP TABLE checks;
+DROP TABLE services;
+DROP TYPE incident_impact;
+DROP TYPE incident_status;
+DROP TYPE service_status;

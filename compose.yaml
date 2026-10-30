@@ -1,0 +1,141 @@
+name: pulseboard
+
+x-app: &app
+  image: pulseboard:local
+  env_file:
+    - path: .env.example
+    - path: .env
+      required: false
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: pulseboard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulseboard-dev}
+      POSTGRES_DB: pulseboard
+    ports: ["${PG_PORT:-17381}:5432"]
+    volumes: [pgdata:/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pulseboard"]
+      interval: 2s
+      retries: 30
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports: ["${REDIS_PORT:-17382}:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    <<: *app
+    build: {context: ., target: runtime}
+    command: ["sh", "-c", "node scripts/migrate.ts up && node scripts/seed.ts"]
+    restart: "no"
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  # The only way in from the host: sets X-Forwarded-For, unbuffered SSE.
+  edge:
+    image: nginx:1.29-alpine
+    volumes: ["./deploy/nginx.conf:/etc/nginx/nginx.conf:ro"]
+    ports: ["${APP_PORT:-17380}:80"]
+    ulimits: {nofile: 65536}
+    depends_on:
+      app: {condition: service_healthy}
+    restart: unless-stopped
+
+  app:
+    <<: *app
+    environment:
+      CACHE_DISABLED: ${CACHE_DISABLED:-0}
+    ulimits: {nofile: 65536}
+    mem_limit: 1g
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 2s
+      retries: 30
+
+  worker:
+    <<: *app
+    command: ["node", "worker/index.ts"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+
+  target:
+    <<: *app
+    command: ["node", "scripts/demo-target.ts"]
+    ports: ["${TARGET_PORT:-17383}:8081"]
+
+  # docker compose run --rm tools <cmd>: load generators on the compose network
+  tools:
+    <<: *app
+    image: pulseboard-tools:local
+    build: {context: ., target: tools}
+    profiles: [tools]
+    restart: "no"
+    ulimits: {nofile: 65536}
+    mem_limit: 1g
+    volumes: ["./results:/app/results"]
+    depends_on:
+      app: {condition: service_healthy}
+
+  # make test: integration tests against their own throwaway Postgres and Redis
+  postgres-test:
+    image: postgres:18-alpine
+    profiles: [test]
+    environment: {POSTGRES_USER: test, POSTGRES_PASSWORD: test, POSTGRES_DB: pulseboard_test}
+    tmpfs: [/var/lib/postgresql]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "test"]
+      interval: 1s
+      retries: 30
+
+  redis-test:
+    image: redis:8-alpine
+    profiles: [test]
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      retries: 30
+
+  test:
+    image: pulseboard-tools:local
+    build: {context: ., target: tools}
+    profiles: [test]
+    command: ["npx", "vitest", "run", "tests/integration"]
+    environment:
+      DATABASE_URL: postgres://test:test@postgres-test:5432/pulseboard_test
+      REDIS_URL: redis://redis-test:6379
+      API_RATE_LIMIT: "5"
+    depends_on:
+      postgres-test: {condition: service_healthy}
+      redis-test: {condition: service_healthy}
+
+  # make e2e: Playwright against the running stack, through the edge like a browser would
+  e2e:
+    image: pulseboard-e2e:local
+    build: {context: ., target: e2e}
+    profiles: [e2e]
+    env_file:
+      - path: .env.example
+      - path: .env
+        required: false
+    environment:
+      BASE_URL: http://edge
+      TARGET_URL: http://target:8081
+    depends_on:
+      edge: {condition: service_started}
+      app: {condition: service_healthy}
+
+volumes:
+  pgdata:
